@@ -4,11 +4,24 @@ import {
   getStatusBarHeight,
   getBottomSpace,
 } from "react-native-iphone-x-helper";
-import {BorderlessButton} from 'react-native-gesture-handler';
+import { BorderlessButton } from "react-native-gesture-handler";
 import { FlatList } from "react-native";
 import styled from "styled-components/native";
 
 import { DataListProps } from "./index";
+
+import { ActivityIndicator } from "react-native";
+
+export const LoadContainer = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const Loader = styled(ActivityIndicator).attrs({
+  color: "orange",
+  size: RFValue(50),
+})``;
 
 export const Container = styled.View`
   flex: 1;

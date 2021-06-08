@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { ActivityIndicator } from "react-native";
+
 import { HighlightCard } from "../../Components/HighlightCard";
 import {
   TransactionCard,
@@ -10,6 +12,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
+  LoadContainer,
+  Loader,
   Container,
   Header,
   HighlightCards,
@@ -30,8 +34,22 @@ export interface DataListProps extends TransactionCardProps {
   id: string;
 }
 
+interface HighlightProps {
+  total: string;
+}
+
+interface HighlightData {
+  entries: HighlightProps;
+  expensives: HighlightProps;
+  total: HighlightProps;
+}
+
 export function Dashboard() {
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DataListProps[]>([]);
+  const [highlightData, setHighlightData] = useState<HighlightData>(
+    {} as HighlightData
+  );
 
   async function loadTransactions() {
     const dataKey = "@gofinances:transactions";
@@ -39,21 +57,28 @@ export function Dashboard() {
 
     const transactions = response ? JSON.parse(response) : [];
 
+    let entriesSum = 0;
+    let expenseSum = 0;
     const transactionsFormated: DataListProps[] = transactions.map(
       (item: DataListProps) => {
-        console.log("ee", item.amount);
         const amount = Number(item.amount).toLocaleString("pt-BR", {
           style: "currency",
           currency: "BRL",
         });
+        if (item.type === "positive") {
+          entriesSum += Number(item.amount);
+        }
 
+        if (item.type === "negative") {
+          expenseSum += Number(item.amount);
+        }
         const date = new Date(item.date);
         const dateFormated = Intl.DateTimeFormat("pt-BR", {
           day: "2-digit",
           month: "2-digit",
           year: "2-digit",
         }).format(new Date(item.date));
-        console.log(item);
+
         return {
           id: item.id,
           name: item.name,
@@ -64,9 +89,29 @@ export function Dashboard() {
         };
       }
     );
+    setHighlightData({
+      entries: {
+        total: entriesSum.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+      },
+      expensives: {
+        total: expenseSum.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+      },
+      total: {
+        total: (entriesSum - expenseSum).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+      },
+    });
 
     setData(transactionsFormated);
-    console.log("testeadsadsasd", data);
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -82,9 +127,19 @@ export function Dashboard() {
     // getData();
   }, []);
 
- useFocusEffect(useCallback(()=>{
-   loadTransactions();
- },[]));
+  useFocusEffect(
+    useCallback(() => {
+      loadTransactions();
+    }, [])
+  );
+
+  if (loading) {
+    return (
+      <LoadContainer>
+        <Loader />
+      </LoadContainer>
+    );
+  }
 
   return (
     <Container>
@@ -109,19 +164,19 @@ export function Dashboard() {
       <HighlightCards>
         <HighlightCard
           title={"Entradas"}
-          amount={"R$ 17.400,00"}
+          amount={highlightData.entries.total}
           lastTransaction={"Última entrada dia 13 de abril"}
           type={"up"}
         />
         <HighlightCard
           title={"Saídas"}
-          amount={"R$ 1.259,00"}
+          amount={highlightData.expensives.total}
           lastTransaction={"Última saída dia 03 de abril"}
           type={"down"}
         />
         <HighlightCard
-          title={"Entradas"}
-          amount={"R$ 16.141,00"}
+          title={"Total"}
+          amount={highlightData.total.total}
           lastTransaction={"01 à 16 de abril"}
           type={"total"}
         />

@@ -3,6 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import { RFValue } from "react-native-responsive-fontsize";
 import { color } from "react-native-reanimated";
 import { TouchableOpacity } from "react-native";
+import { RectButton } from "react-native-gesture-handler";
 interface IconProps {
   type: "up" | "down";
 }

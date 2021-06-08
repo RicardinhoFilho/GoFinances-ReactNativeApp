@@ -1,6 +1,6 @@
 import React from "react";
 import { FlatList } from "react-native";
-import { categories } from "../../../categories";
+import { categories } from "../../Utils/categories";
 import {
   Container,
   Header,

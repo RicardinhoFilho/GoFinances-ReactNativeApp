@@ -1,6 +1,9 @@
 import React from "react";
 import { ThemeProvider } from "styled-components";
 
+import "intl";
+import "intl/locale-data/jsonp/pt-BR";
+
 import {
   useFonts,
   Poppins_400Regular,
@@ -12,6 +15,10 @@ import theme from "./src/global/styles/theme";
 import { Dashboard } from "./src/screens/Dashboard";
 import AppLoading from "expo-app-loading";
 import { Register } from "./src/screens/Register";
+
+import { NavigationContainer } from "@react-navigation/native";
+import { AppRoutes } from "./src/Routes/app.routes";
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -25,8 +32,9 @@ export default function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      {/* <Dashboard /> */}
-       <Register /> 
+      <NavigationContainer>
+        <AppRoutes />
+      </NavigationContainer>
     </ThemeProvider>
   );
 }

@@ -28,6 +28,7 @@ import {
   TransactionsList,
   LogoutButton,
 } from "./styles";
+import { View } from "react-native";
 
 export interface DataListProps extends TransactionCardProps {
   id: string;

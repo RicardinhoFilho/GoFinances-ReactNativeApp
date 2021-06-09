@@ -8,6 +8,8 @@ import { BorderlessButton } from "react-native-gesture-handler";
 import { FlatList } from "react-native";
 import styled from "styled-components/native";
 
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+
 import { DataListProps } from "./index";
 
 import { ActivityIndicator } from "react-native";
@@ -23,7 +25,7 @@ export const Loader = styled(ActivityIndicator).attrs({
   size: RFValue(50),
 })``;
 
-export const Container = styled.View`
+export const Container = styled.View.attrs({vertical:true})`
   flex: 1;
   background-color: ${({ theme }) => theme.colors.background};
 `;

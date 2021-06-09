@@ -1,15 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { HistoryCard } from "../../Components/HistoryCard";
 
 import { categories } from "../../Utils/categories";
-import { FlatList } from "react-native";
 
 import { VictoryPie } from "victory-native";
 import { RFValue } from "react-native-responsive-fontsize";
 
-import { Container, Header, Title, Content, ChartContent } from "./styles";
+import { addMonths, subMonths, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+import {
+  Container,
+  Header,
+  Title,
+  Content,
+  ChartContent,
+  MonthSelector,
+  SelectIcon,
+  MonthSelectorButton,
+  Month,
+  LoadContainer,
+  Loader,
+} from "./styles";
+
+import { useFocusEffect } from "@react-navigation/native";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 interface ITransactionData {
   type: "positive" | "negative";
@@ -33,14 +50,19 @@ export function Resume() {
   const [totalByCategories, setTotalByCategories] = useState<CategoryData[]>(
     []
   );
-
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [loading, setLoading] = useState(true);
   async function loadData() {
+    setLoading(true);
     const dataKey = "@gofinances:transactions";
     const response = await AsyncStorage.getItem(dataKey);
     const responseFormated = response ? JSON.parse(response) : [];
     const totalByCategory: CategoryData[] = [];
     const expensives = responseFormated.filter(
-      (expensive: ITransactionData) => expensive.type === "negative"
+      (expensive: ITransactionData) =>
+        expensive.type === "negative" &&
+        new Date(expensive.date).getMonth() === selectedDate.getMonth() &&
+        new Date(expensive.date).getFullYear() === selectedDate.getFullYear()
     );
     const expensivesTotal: number = expensives.reduce(
       (acc: number, expensive: ITransactionData) => {
@@ -79,19 +101,69 @@ export function Resume() {
     });
 
     setTotalByCategories(totalByCategory);
-    console.log(totalByCategory);
+    setLoading(false);
+    //console.log(totalByCategory);
   }
+  function handleDateChange(action: "next" | "prev") {
+    if (action === "next") {
+      setSelectedDate(addMonths(selectedDate, 1));
+    }
+    if (action === "prev") {
+      setSelectedDate(subMonths(selectedDate, 1));
+    }
 
+    //console.log(selectedDate)
+  }
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedDate]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setSelectedDate(new Date());
+      loadData();
+    }, [])
+  );
+
+  if (loading) {
+    return (
+      <>
+        <Header>
+          <Title>Resumo</Title>
+        </Header>
+        <LoadContainer>
+          <Loader />
+        </LoadContainer>
+      </>
+    );
+  }
 
   return (
     <Container>
       <Header>
         <Title>Resumo</Title>
       </Header>
-      <Content>
+      <Content
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: useBottomTabBarHeight(),
+          paddingHorizontal: RFValue(24),
+        }}
+      >
+        <MonthSelector>
+          <MonthSelectorButton>
+            <SelectIcon
+              name="chevron-left"
+              onPress={() => handleDateChange("prev")}
+            />
+          </MonthSelectorButton>
+
+          <Month>{format(selectedDate, "MMMM, yyyy", { locale: ptBR })}</Month>
+
+          <MonthSelectorButton onPress={() => handleDateChange("next")}>
+            <SelectIcon name="chevron-right" />
+          </MonthSelectorButton>
+        </MonthSelector>
         <ChartContent>
           <VictoryPie
             data={totalByCategories}
@@ -99,24 +171,23 @@ export function Resume() {
             y="total"
             colorScale={totalByCategories.map((category) => category.color)}
             style={{
-              labels: { fontSize: RFValue(18), fontWeight: "bold", fill:'white' },
+              labels: {
+                fontSize: RFValue(18),
+                fontWeight: "bold",
+                fill: "white",
+              },
             }}
             labelRadius={RFValue(50)}
-            height={300}
-            
+            height={RFValue(400)}
           />
         </ChartContent>
-        <FlatList
-          data={totalByCategories}
-          keyExtractor={(item) => item.key}
-          renderItem={({ item }) => (
-            <HistoryCard
-              title={item.name}
-              amount={item.totalFormated}
-              color={item.color}
-            />
-          )}
-        />
+        {totalByCategories.map((item) => (
+          <HistoryCard
+            title={item.name}
+            amount={item.totalFormated}
+            color={item.color}
+          />
+        ))}
       </Content>
     </Container>
   );

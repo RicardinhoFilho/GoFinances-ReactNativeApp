@@ -8,6 +8,8 @@ import { useTheme } from "styled-components";
 
 import { Dashboard } from "../screens/Dashboard";
 import { Register } from "../screens/Register";
+import { Resume } from "../screens/Resume";
+
 import theme from "../global/styles/theme";
 import { RFValue } from "react-native-responsive-fontsize";
 
@@ -50,7 +52,7 @@ export function AppRoutes() {
       />
       <Screen
         name="Resumo"
-        component={Register}
+        component={Resume}
         options={{
           tabBarIcon: ({ size, color }) => (
             <MaterialIcons name="pie-chart" size={size} color={color} />

@@ -46,8 +46,35 @@ interface HighlightData {
 
 function lastTransaction(
   transactions: DataListProps[],
-  option: "positive" | "negative"
+  option: "positive" | "negative" | "total"
 ): string {
+  if (option === "total") {
+    const last = new Date(
+      Math.max.apply(
+        Math,
+        transactions.map((transaction: DataListProps) =>
+          new Date(transaction.date).getTime()
+        )
+      )
+    );
+
+    const first = new Date(
+      Math.min.apply(
+        Math,
+        transactions.map((transaction: DataListProps) =>
+          new Date(transaction.date).getTime()
+        )
+      )
+    );
+
+    return `${first.getDate()} à ${last.getDate()} de ${last.toLocaleString(
+      "pt-BR",
+      {
+        month: "long",
+      }
+    )}`;
+  }
+
   const date = new Date(
     Math.max.apply(
       Math,
@@ -58,6 +85,7 @@ function lastTransaction(
         )
     )
   );
+
   return `Última ${
     option === "positive" ? "entrada" : "saída"
   } dia ${date.getDate()} de ${date.toLocaleString("pt-BR", {
@@ -111,7 +139,7 @@ export function Dashboard() {
 
     const lastTransactionEntries = lastTransaction(transactions, "positive");
     const lastTransactionExpense = lastTransaction(transactions, "negative");
-    const totalInterval = `01 à ${lastTransactionExpense}`;
+    const totalInterval = lastTransaction(transactions, "total");
 
     setHighlightData({
       entries: {
@@ -196,7 +224,7 @@ export function Dashboard() {
         <HighlightCard
           title={"Total"}
           amount={highlightData.total.total}
-          lastTransaction={"01 à 16 de abril"}
+          lastTransaction={highlightData.total.lastTransaction}
           type={"total"}
         />
       </HighlightCards>

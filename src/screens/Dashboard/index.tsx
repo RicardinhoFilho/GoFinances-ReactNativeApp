@@ -7,6 +7,7 @@ import {
 } from "../../Components/TransactionCard";
 
 import { useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "../../hooks/auth";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -101,8 +102,10 @@ export function Dashboard() {
     {} as HighlightData
   );
 
+  const { signOut, user } = useAuth();
+
   async function loadTransactions() {
-    const dataKey = "@gofinances:transactions";
+    const dataKey = `@gofinances:transactions_user:${user.id}`;
     const response = await AsyncStorage.getItem(dataKey);
 
     const transactions: DataListProps[] = response ? JSON.parse(response) : [];
@@ -196,15 +199,17 @@ export function Dashboard() {
           <UserInfo>
             <Photo
               source={{
-                uri: "https://avatars.githubusercontent.com/u/74803287?v=4",
+                uri: user.photo
+                  ? user.photo
+                  : `https://ui-avatars.com/api/?name=${user.name}`,
               }}
             />
             <User>
               <UserGreeting>Olá,</UserGreeting>
-              <UserName>Ricardo</UserName>
+              <UserName>{user.name}</UserName>
             </User>
           </UserInfo>
-          <LogoutButton onPress={() => {}}>
+          <LogoutButton onPress={signOut}>
             <Icon name="power" />
           </LogoutButton>
         </UserWrapper>

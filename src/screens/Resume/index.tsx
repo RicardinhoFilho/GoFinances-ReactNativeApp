@@ -11,6 +11,8 @@ import { RFValue } from "react-native-responsive-fontsize";
 import { addMonths, subMonths, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+import { useAuth } from "../../hooks/auth";
+
 import {
   Container,
   Header,
@@ -52,9 +54,10 @@ export function Resume() {
   );
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
+  const {user} = useAuth();
   async function loadData() {
     setLoading(true);
-    const dataKey = "@gofinances:transactions";
+    const dataKey = `@gofinances:transactions_user:${user.id}`;
     const response = await AsyncStorage.getItem(dataKey);
     const responseFormated = response ? JSON.parse(response) : [];
     const totalByCategory: CategoryData[] = [];
